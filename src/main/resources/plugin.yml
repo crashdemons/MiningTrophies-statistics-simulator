@@ -1,0 +1,11 @@
+name: PlayerHeads-stat-sim
+version: ${project.version}
+description: Simulates playerhead drops for testing
+authors: [crashdemons]
+
+api-version: 1.13
+
+main: com.github.crashdemons.phsim.PHSimPlugin
+database: false
+
+depend: [PlayerHeads]

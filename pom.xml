@@ -10,4 +10,78 @@
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
     </properties>
+    
+    <repositories>
+	<repository>
+            <id>mojang</id>
+            <name>Mojang's Repository</name>
+            <url>https://libraries.minecraft.net/</url>
+        </repository>
+        <repository>
+            <id>md_5-releases</id>
+            <url>http://repo.md-5.net/content/repositories/releases/</url>
+        </repository>
+        <repository>
+            <id>spigot-repo</id>
+            <url>https://hub.spigotmc.org/nexus/content/repositories/snapshots/</url>
+        </repository>
+        <repository>
+            <id>crashdemons-repo</id>
+            <url>https://meme.tips/java-repos/</url>
+        </repository>
+    </repositories>
+    
+    
+
+    <dependencies>
+        <dependency>
+            <!-- This shouldn't be a dep which is packaging: pom -->
+            <groupId>org.shininet.bukkit</groupId>
+            <artifactId>PlayerHeads-api</artifactId>
+            <version>5.2.9-SNAPSHOT</version>
+        </dependency>
+  	<dependency>
+  		<groupId>junit</groupId>
+  		<artifactId>junit</artifactId>
+  		<version>[4.12,)</version>
+  		<type>jar</type>
+  		<scope>test</scope>
+  	</dependency>
+        
+
+        <dependency>
+            <groupId>org.spigotmc</groupId>
+            <artifactId>spigot-api</artifactId>
+            <version>1.16.1-R0.1-SNAPSHOT</version>
+        </dependency>
+    </dependencies>
+    
+    
+    <build>
+        <finalName>${project.name}-${project.version}</finalName>
+        <resources>
+            <resource>
+                <directory>${basedir}/src/main/resources</directory>
+                <filtering>true</filtering>
+            </resource>
+        </resources>
+        <plugins>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.5.1</version>
+                <configuration>
+                    <source>1.8</source>
+                    <target>1.8</target>
+                    <compilerArgs>
+                        <arg>-Xlint:all</arg>
+                    </compilerArgs>
+                </configuration>
+            </plugin>
+        </plugins>
+    </build>
+    
 </project>
+
+
+
