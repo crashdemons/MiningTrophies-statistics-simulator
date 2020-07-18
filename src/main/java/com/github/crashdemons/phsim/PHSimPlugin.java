@@ -64,7 +64,7 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
         if(getTesting()){
             //measure drops
         }else{
-            getLogger().info("non-test BEFORE Head Roll: "+
+            getLogger().info("non-sim START Head Roll: "+
                     " killer="+event.getKiller().getName()+
                     " target="+event.getTarget().getName()+
                     " success="+event.getDropSuccess()+
@@ -82,7 +82,7 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
         if(getTesting()){
             //measure drops
         }else{
-            getLogger().info("non-test AFTER Head Roll: "+
+            getLogger().info("non-sim END Head Roll: "+
                     " killer="+event.getKiller().getName()+
                     " target="+event.getTarget().getName()+
                     " success="+event.getDropSuccess()+
@@ -105,7 +105,7 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
             ItemStack stack = event.getDrop();
             int amount=0;
             if(stack!=null) amount = stack.getAmount();
-            getLogger().info("non-test Head Drop: "
+            getLogger().info("non-sim Head Drop: "
                     + " beheadee="+event.getEntity().getName()
                     + " drops="+amount+
                     ""
