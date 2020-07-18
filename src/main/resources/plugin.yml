@@ -1,4 +1,4 @@
-name: PlayerHeads-stat-sim
+name: PlayerHeads-stats
 version: ${project.version}
 description: Simulates playerhead drops for testing
 authors: [crashdemons]
