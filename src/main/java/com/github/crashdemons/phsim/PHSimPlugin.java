@@ -7,6 +7,9 @@ package com.github.crashdemons.phsim;
 
 import com.github.crashdemons.playerheads.api.PlayerHeads;
 import com.github.crashdemons.playerheads.api.PlayerHeadsAPI;
+import java.util.Queue;
+import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.concurrent.atomic.AtomicInteger;
 import org.bukkit.Bukkit;
 import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
@@ -30,14 +33,23 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
     private final Object testingLock = new Object();
     private boolean testing=false;
     
+    private final AtomicInteger deathsBefore = new AtomicInteger(0);
+    private final AtomicInteger successesBefore= new AtomicInteger(0);
+    private final AtomicInteger deathsAfter= new AtomicInteger(0);
+    private final AtomicInteger successesAfter= new AtomicInteger(0);
+    Queue<Double> originalRates = new ConcurrentLinkedQueue<Double>();
+    Queue<Double> effectiveRates = new ConcurrentLinkedQueue<Double>();
+    Queue<Double> originalRolls = new ConcurrentLinkedQueue<Double>();
+    Queue<Double> effectiveRolls = new ConcurrentLinkedQueue<Double>();
+    
     //----------------------------------------------------
     void setTesting(boolean state){
        synchronized(testingLock){
            testing = state;
            if(testing){
-                getLogger().info("Started testing!");
+                onTestingStart();
            }else{
-                getLogger().info("Finished testing!");
+                onTestingFinish();
            }
        }
     }
@@ -52,7 +64,36 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
     }
     //----------------------------------------------------
     
+    public void onTestingStart(){
+
+                getLogger().info("Started testing!");
+    }
     
+    public void onTestingFinish(){
+                getLogger().info("Finished testing!");
+        Double successRateBefore = new Double(successesBefore.get()) / new Double(deathsBefore.get());
+        Double successRateAfter = new Double(successesAfter.get()) / new Double(deathsAfter.get());
+        
+        
+        Double originalRoll = originalRolls.stream().mapToDouble(a->a).average().orElse(Double.NaN);
+        Double originalRate = originalRates.stream().mapToDouble(a->a).average().orElse(Double.NaN);
+        Double effectiveRoll = effectiveRolls.stream().mapToDouble(a->a).average().orElse(Double.NaN);
+        Double effectiveRate = effectiveRates.stream().mapToDouble(a->a).average().orElse(Double.NaN);
+        
+        getLogger().info("Final simulated statistics: (before and after luck)");
+        getLogger().info("  deaths: "+deathsBefore.get()+" -> "+deathsAfter.get());
+        getLogger().info("  successes: "+successesBefore.get()+" -> "+successesAfter.get());
+        getLogger().info("  average success rate: "+successRateBefore+" -> "+successRateAfter);
+        getLogger().info("  originalDropRoll average: "+originalRoll);
+        getLogger().info("  originalDropRate average: "+originalRate);
+        getLogger().info("  effectiveDropRoll average: "+effectiveRoll);
+        getLogger().info("  effectiveDropRate average: "+effectiveRate);
+        
+        deathsBefore.set(0);
+        successesBefore.set(0);
+        deathsAfter.set(0);
+        successesAfter.set(0);
+    }
     
     @Override
     public void onEnable(){
@@ -63,6 +104,8 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
     public void onHeadRollLow(HeadRollEvent event){
         if(getTesting()){
             //measure drops
+            deathsBefore.incrementAndGet();
+            if(event.succeeded()) successesBefore.incrementAndGet();
         }else{
             getLogger().info("non-sim START Head Roll: "+
                     " killer="+event.getKiller().getName()+
@@ -81,6 +124,12 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
     public void onHeadRollHigh(HeadRollEvent event){
         if(getTesting()){
             //measure drops
+            deathsAfter.incrementAndGet();
+            if(event.succeeded()) successesAfter.incrementAndGet();
+            originalRates.add(event.getOriginalDropRate());
+            originalRolls.add(event.getOriginalDropRoll());
+            effectiveRates.add(event.getEffectiveDropRate());
+            effectiveRolls.add(event.getEffectiveDropRoll());
         }else{
             getLogger().info("non-sim END Head Roll: "+
                     " killer="+event.getKiller().getName()+
@@ -128,7 +177,7 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
         getLogger().info("queuing tests");
         setTesting(true); // OR syncCallEvent(new SetTestingEvent(true));
         for(long i=0L;i<1000000L;i++){
-            //SimulatedDeathEvent newEvent = simulateDeathEvent(event,1*20L);
+            SimulatedDeathEvent newEvent = simulateDeathEvent(event,1*20L);
         }
         syncCallEvent(new SetTestingEvent(false),2*20L);
         getLogger().info("done queuing tests");
