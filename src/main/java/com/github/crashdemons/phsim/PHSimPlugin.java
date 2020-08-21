@@ -64,16 +64,25 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
     }
     //----------------------------------------------------
     
-    public void onTestingStart(){
+    public void onTestingCleanup(){
+        deathsBefore.set(0);
+        successesBefore.set(0);
+        deathsAfter.set(0);
+        successesAfter.set(0);
+        
         originalRates.clear();
         effectiveRates.clear();
         originalRolls.clear();
         effectiveRolls.clear();
+    }
+    
+    
+    public void onTestingStart(){
         getLogger().info("Started testing!");
     }
     
     public void onTestingFinish(){
-                getLogger().info("Finished testing!");
+        getLogger().info("Finished testing!");
         Double successRateBefore = new Double(successesBefore.get()) / new Double(deathsBefore.get());
         Double successRateAfter = new Double(successesAfter.get()) / new Double(deathsAfter.get());
         
@@ -92,10 +101,7 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
         getLogger().info("  effectiveDropRoll average: "+effectiveRoll);
         getLogger().info("  effectiveDropRate average: "+effectiveRate);
         
-        deathsBefore.set(0);
-        successesBefore.set(0);
-        deathsAfter.set(0);
-        successesAfter.set(0);
+        onTestingCleanup();
     }
     
     @Override
