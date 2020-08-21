@@ -1,5 +1,5 @@
 # PlayerHeads-statistics-simulator
-_Warning: This is not a plugin that should be used on a live server with players. This is a testing-plugin meant to validate droprates on a private or local server and can have severe performance costs and trigger watchdogs/crash-detection._
+_Warning: This is not a plugin that should be used on a live server with players. This is a testing-plugin meant to validate droprates on a private or local server and can have severe performance costs and trigger watchdogs/crash-detection.  If you still want to use it, you need to configure the server properly to disable watchdogs/crash-detection._
 
 General function and features:
  * Logging for HeadRoll event details at both high and low plugin priorities (droprate,droproll, killer, target, success state)
