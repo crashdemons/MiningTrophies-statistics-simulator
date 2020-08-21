@@ -65,8 +65,11 @@ public class PHSimPlugin extends JavaPlugin implements Listener{
     //----------------------------------------------------
     
     public void onTestingStart(){
-
-                getLogger().info("Started testing!");
+        originalRates.clear();
+        effectiveRates.clear();
+        originalRolls.clear();
+        effectiveRolls.clear();
+        getLogger().info("Started testing!");
     }
     
     public void onTestingFinish(){
