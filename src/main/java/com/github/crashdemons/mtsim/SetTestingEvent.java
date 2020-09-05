@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package com.github.crashdemons.phsim;
+package com.github.crashdemons.mtsim;
 
 import org.bukkit.event.HandlerList;
 import org.bukkit.event.server.ServerEvent;
