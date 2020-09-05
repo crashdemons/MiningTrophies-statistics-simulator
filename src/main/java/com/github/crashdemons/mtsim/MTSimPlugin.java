@@ -160,7 +160,8 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
             int amount=0;
             if(stack!=null) amount = stack.getAmount();
             getLogger().info("non-sim Trophy Drop: "
-                    + " beheadee="+event.getPlayer().getName()
+                    + " miner="+event.getPlayer().getName()
+                    + " target="+event.getBlock().getType().name()
                     + " drops="+amount+
                     ""
             );
