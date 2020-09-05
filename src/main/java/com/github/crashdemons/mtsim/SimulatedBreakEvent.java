@@ -5,19 +5,19 @@
  */
 package com.github.crashdemons.mtsim;
 
-import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.block.BlockBreakEvent;
 
 /**
  *
  * @author crashdemons (crashenator at gmail.com)
  */
-public class SimulatedDeathEvent extends EntityDeathEvent {
+public class SimulatedBreakEvent extends BlockBreakEvent {
     public static long count=0;
     public volatile long id;
     
     
-    public SimulatedDeathEvent(EntityDeathEvent evt){
-        super(evt.getEntity(),evt.getDrops());
+    public SimulatedBreakEvent(BlockBreakEvent evt){
+        super(evt.getBlock(),evt.getPlayer());
         assignId();
     }
     
