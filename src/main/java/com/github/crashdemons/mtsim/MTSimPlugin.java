@@ -26,7 +26,6 @@ import org.bukkit.scheduler.BukkitScheduler;
  */
 public class MTSimPlugin extends JavaPlugin implements Listener{
     
-    PlayerTrophysAPI ph;
     
     private final Object testingLock = new Object();
     private boolean testing=false;
@@ -104,7 +103,6 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
     
     @Override
     public void onEnable(){
-        ph = PlayerTrophys.getApiInstance();
         Bukkit.getPluginManager().registerEvents(this, this);
     }
     @EventHandler(priority = EventPriority.LOWEST)
