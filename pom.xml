@@ -38,7 +38,7 @@
             <!-- This shouldn't be a dep which is packaging: pom -->
             <groupId>com.github.crashdemons</groupId>
             <artifactId>MiningTrophies</artifactId>
-            <version>0.7.3-SNAPSHOT1</version>
+            <version>0.7.3-SNAPSHOT</version>
         </dependency>
   	<dependency>
   		<groupId>junit</groupId>
