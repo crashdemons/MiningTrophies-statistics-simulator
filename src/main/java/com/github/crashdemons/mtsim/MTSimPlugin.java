@@ -30,9 +30,9 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
     private final Object testingLock = new Object();
     private boolean testing=false;
     
-    private final AtomicInteger deathsBefore = new AtomicInteger(0);
+    private final AtomicInteger minedBefore = new AtomicInteger(0);
     private final AtomicInteger successesBefore= new AtomicInteger(0);
-    private final AtomicInteger deathsAfter= new AtomicInteger(0);
+    private final AtomicInteger minedAfter= new AtomicInteger(0);
     private final AtomicInteger successesAfter= new AtomicInteger(0);
     Queue<Double> originalRates = new ConcurrentLinkedQueue<Double>();
     Queue<Double> effectiveRates = new ConcurrentLinkedQueue<Double>();
@@ -62,9 +62,9 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
     //----------------------------------------------------
     
     public void onTestingCleanup(){
-        deathsBefore.set(0);
+        minedBefore.set(0);
         successesBefore.set(0);
-        deathsAfter.set(0);
+        minedAfter.set(0);
         successesAfter.set(0);
         
         originalRates.clear();
@@ -80,8 +80,8 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
     
     public void onTestingFinish(){
         getLogger().info("Finished testing!");
-        Double successRateBefore = new Double(successesBefore.get()) / new Double(deathsBefore.get());
-        Double successRateAfter = new Double(successesAfter.get()) / new Double(deathsAfter.get());
+        Double successRateBefore = new Double(successesBefore.get()) / new Double(minedBefore.get());
+        Double successRateAfter = new Double(successesAfter.get()) / new Double(minedAfter.get());
         
         
         Double originalRoll = originalRolls.stream().mapToDouble(a->a).average().orElse(Double.NaN);
@@ -90,7 +90,7 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
         Double effectiveRate = effectiveRates.stream().mapToDouble(a->a).average().orElse(Double.NaN);
         
         getLogger().info("Final simulated statistics: (before and after luck)");
-        getLogger().info("  deaths: "+deathsBefore.get()+" -> "+deathsAfter.get());
+        getLogger().info("  mined: "+minedBefore.get()+" -> "+minedAfter.get());
         getLogger().info("  successes: "+successesBefore.get()+" -> "+successesAfter.get());
         getLogger().info("  average success rate: "+successRateBefore+" -> "+successRateAfter);
         getLogger().info("  originalDropRoll average: "+originalRoll);
@@ -109,7 +109,7 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
     public void onTrophyRollLow(TrophyRollEvent event){
         if(getTesting()){
             //measure drops
-            deathsBefore.incrementAndGet();
+            minedBefore.incrementAndGet();
             if(event.succeeded()) successesBefore.incrementAndGet();
         }else{
             getLogger().info("non-sim START Trophy Roll: "+
@@ -129,7 +129,7 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
     public void onTrophyRollHigh(TrophyRollEvent event){
         if(getTesting()){
             //measure drops
-            deathsAfter.incrementAndGet();
+            minedAfter.incrementAndGet();
             if(event.succeeded()) successesAfter.incrementAndGet();
             originalRates.add(event.getOriginalDropRate());
             originalRolls.add(event.getOriginalDropRoll());
@@ -169,7 +169,7 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
     }
     
     @EventHandler(ignoreCancelled = true)
-    public void onDeath(BlockBreakEvent event){
+    public void onBreak(BlockBreakEvent event){
         if(event==null) return;
         if(event instanceof SimulatedBreakEvent) return;
         if(event.getPlayer()==null) return;
@@ -184,7 +184,7 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
         getLogger().info("queuing tests");
         setTesting(true); // OR syncCallEvent(new SetTestingEvent(true));
         for(long i=0L;i<1000000L;i++){
-            SimulatedBreakEvent newEvent = simulateDeathEvent(event,1*20L);
+            SimulatedBreakEvent newEvent = simulateBreakEvent(event,1*20L);
         }
         syncCallEvent(new SetTestingEvent(false),2*20L);
         getLogger().info("done queuing tests");
@@ -208,7 +208,7 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
         }, tickDelay);
     }
     
-    private SimulatedBreakEvent simulateDeathEvent(BlockBreakEvent originalEvent, long tickDelay){
+    private SimulatedBreakEvent simulateBreakEvent(BlockBreakEvent originalEvent, long tickDelay){
         SimulatedBreakEvent newEvent = new SimulatedBreakEvent(originalEvent);
         syncCallEvent(newEvent,tickDelay);
         return newEvent;
