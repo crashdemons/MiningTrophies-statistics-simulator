@@ -1,4 +1,8 @@
-# PlayerHeads-statistics-simulator
+# MiningTrophies-statistics-simulator
+
+NOTE: This is an INCOMPLETE plugin being modified from PlayerHeads-stats-sim. Until it is finished, code and documentation may be left over from THAT plugin instead.
+
+
 _Warning: This is not a plugin that should be used on a live server with players. This is a testing-plugin meant to validate droprates on a private or local server and can have severe performance costs and trigger watchdogs/crash-detection.  If you still want to use it, you need to configure the server properly to disable watchdogs/crash-detection._
 
 General function and features:
