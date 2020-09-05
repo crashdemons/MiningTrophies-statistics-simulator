@@ -1,12 +1,12 @@
 /*
- * To change this license header, choose License Headers in Project Properties.
+ * To change this license header, choose License Trophyers in Project Properties.
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
 package com.github.crashdemons.mtsim;
 
-import com.github.crashdemons.playerheads.api.PlayerHeads;
-import com.github.crashdemons.playerheads.api.PlayerHeadsAPI;
+import com.github.crashdemons.miningtrophies.events.BlockDropTrophyEvent;
+import com.github.crashdemons.miningtrophies.events.TrophyRollEvent;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.atomic.AtomicInteger;
@@ -15,12 +15,10 @@ import org.bukkit.event.Event;
 import org.bukkit.event.EventHandler;
 import org.bukkit.event.EventPriority;
 import org.bukkit.event.Listener;
-import org.bukkit.event.entity.EntityDeathEvent;
+import org.bukkit.event.block.BlockBreakEvent;
 import org.bukkit.inventory.ItemStack;
 import org.bukkit.plugin.java.JavaPlugin;
 import org.bukkit.scheduler.BukkitScheduler;
-import org.shininet.bukkit.playerheads.events.HeadRollEvent;
-import org.shininet.bukkit.playerheads.events.LivingEntityDropHeadEvent;
 
 /**
  *
@@ -28,7 +26,7 @@ import org.shininet.bukkit.playerheads.events.LivingEntityDropHeadEvent;
  */
 public class MTSimPlugin extends JavaPlugin implements Listener{
     
-    PlayerHeadsAPI ph;
+    PlayerTrophysAPI ph;
     
     private final Object testingLock = new Object();
     private boolean testing=false;
@@ -106,19 +104,19 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
     
     @Override
     public void onEnable(){
-        ph = PlayerHeads.getApiInstance();
+        ph = PlayerTrophys.getApiInstance();
         Bukkit.getPluginManager().registerEvents(this, this);
     }
     @EventHandler(priority = EventPriority.LOWEST)
-    public void onHeadRollLow(HeadRollEvent event){
+    public void onTrophyRollLow(TrophyRollEvent event){
         if(getTesting()){
             //measure drops
             deathsBefore.incrementAndGet();
             if(event.succeeded()) successesBefore.incrementAndGet();
         }else{
-            getLogger().info("non-sim START Head Roll: "+
-                    " killer="+event.getKiller().getName()+
-                    " target="+event.getTarget().getName()+
+            getLogger().info("non-sim START Trophy Roll: "+
+                    " miner="+event.getMiner().getName()+
+                    " target="+event.getTarget().getType().name()+
                     " success="+event.getDropSuccess()+
                     " droprateO="+event.getOriginalDropRate()+
                     " droprollO="+event.getOriginalDropRoll()+
@@ -130,7 +128,7 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
         }
     }
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onHeadRollHigh(HeadRollEvent event){
+    public void onTrophyRollHigh(TrophyRollEvent event){
         if(getTesting()){
             //measure drops
             deathsAfter.incrementAndGet();
@@ -140,9 +138,9 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
             effectiveRates.add(event.getEffectiveDropRate());
             effectiveRolls.add(event.getEffectiveDropRoll());
         }else{
-            getLogger().info("non-sim END Head Roll: "+
-                    " killer="+event.getKiller().getName()+
-                    " target="+event.getTarget().getName()+
+            getLogger().info("non-sim END Trophy Roll: "+
+                    " miner="+event.getMiner().getName()+
+                    " target="+event.getTarget().getType().name()+
                     " success="+event.getDropSuccess()+
                     " droprateO="+event.getOriginalDropRate()+
                     " droprollO="+event.getOriginalDropRoll()+
@@ -154,7 +152,7 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
         }
     }
     @EventHandler(priority = EventPriority.MONITOR)
-    public void onHeadDrop(LivingEntityDropHeadEvent event){
+    public void onTrophyDrop(BlockDropTrophyEvent event){
         if(getTesting()){
             //measure drops
             event.setCancelled(true);
@@ -163,8 +161,8 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
             ItemStack stack = event.getDrop();
             int amount=0;
             if(stack!=null) amount = stack.getAmount();
-            getLogger().info("non-sim Head Drop: "
-                    + " beheadee="+event.getEntity().getName()
+            getLogger().info("non-sim Trophy Drop: "
+                    + " beheadee="+event.getPlayer().getName()
                     + " drops="+amount+
                     ""
             );
@@ -172,21 +170,22 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
     }
     
     @EventHandler(ignoreCancelled = true)
-    public void onDeath(EntityDeathEvent event){
+    public void onDeath(BlockBreakEvent event){
         if(event==null) return;
-        if(event instanceof SimulatedDeathEvent) return;
-        if(event.getEntity().getKiller()==null) return;
+        if(event instanceof SimulatedBreakEvent) return;
+        if(event.getPlayer()==null) return;
+        if(event.getBlock()==null) return;
         if(getTesting()) return;
         
         //start head simulation from initial event
         startTestingSync(event);
     }
     
-    private void startTestingUnsafe(EntityDeathEvent event){
+    private void startTestingUnsafe(BlockBreakEvent event){
         getLogger().info("queuing tests");
         setTesting(true); // OR syncCallEvent(new SetTestingEvent(true));
         for(long i=0L;i<1000000L;i++){
-            SimulatedDeathEvent newEvent = simulateDeathEvent(event,1*20L);
+            SimulatedBreakEvent newEvent = simulateDeathEvent(event,1*20L);
         }
         syncCallEvent(new SetTestingEvent(false),2*20L);
         getLogger().info("done queuing tests");
@@ -195,7 +194,7 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
         BukkitScheduler scheduler = getServer().getScheduler();
         scheduler.scheduleSyncDelayedTask(this, task, tickDelay);
     }
-    private void startTestingSync(EntityDeathEvent event){
+    private void startTestingSync(BlockBreakEvent event){
         syncOperation( () -> {
             startTestingUnsafe(event);
         }, 3*20L);
@@ -210,8 +209,8 @@ public class MTSimPlugin extends JavaPlugin implements Listener{
         }, tickDelay);
     }
     
-    private SimulatedDeathEvent simulateDeathEvent(EntityDeathEvent originalEvent, long tickDelay){
-        SimulatedDeathEvent newEvent = new SimulatedDeathEvent(originalEvent);
+    private SimulatedBreakEvent simulateDeathEvent(BlockBreakEvent originalEvent, long tickDelay){
+        SimulatedBreakEvent newEvent = new SimulatedBreakEvent(originalEvent);
         syncCallEvent(newEvent,tickDelay);
         return newEvent;
     }
